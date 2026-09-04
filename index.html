@@ -1,233 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WalkEarn</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WalkEarn</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f7f5;
-      color: #222;
-    }
-
-    .app {
-      max-width: 480px;
-      margin: auto;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 5px;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #666;
-      margin-bottom: 25px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 20px;
-      padding: 22px;
-      margin-bottom: 18px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-      text-align: center;
-    }
-
-    .steps {
-      font-size: 48px;
-      font-weight: bold;
-      margin: 10px 0;
-    }
-
-    .label {
-      color: #777;
-    }
-
-    .progress {
-      height: 12px;
-      background: #e5e5e5;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 15px;
-    }
-
-    .bar {
-      height: 100%;
-      width: 0%;
-      background: #222;
-      transition: width 0.4s;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .stat {
-      background: white;
-      border-radius: 16px;
-      padding: 18px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-    }
-
-    .number {
-      font-size: 25px;
-      font-weight: bold;
-      margin-top: 5px;
-    }
-
-    button {
-      width: 100%;
-      border: none;
-      padding: 15px;
-      border-radius: 14px;
-      font-size: 17px;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-
-    .primary {
-      background: #222;
-      color: white;
-    }
-
-    .secondary {
-      background: #e9eceb;
-      color: #222;
-    }
-
-    .note {
-      font-size: 13px;
-      color: #777;
-      line-height: 1.5;
-      margin-top: 18px;
-    }
-  </style>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f7f5;
+  color:#222;
+}
+.app{
+  max-width:480px;
+  margin:auto;
+  min-height:100vh;
+  padding:20px;
+}
+h1{text-align:center;margin-bottom:5px}
+.subtitle{text-align:center;color:#666;margin-bottom:25px}
+.card{
+  background:#fff;
+  border-radius:20px;
+  padding:22px;
+  margin-bottom:18px;
+  box-shadow:0 5px 20px rgba(0,0,0,.08);
+  text-align:center;
+}
+.steps{
+  font-size:48px;
+  font-weight:bold;
+  margin:10px 0;
+}
+.label{color:#777}
+.progress{
+  height:12px;
+  background:#e5e5e5;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:15px;
+}
+.bar{
+  height:100%;
+  width:0%;
+  background:#222;
+  transition:width .3s;
+}
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.stat{
+  background:#fff;
+  border-radius:16px;
+  padding:18px;
+  text-align:center;
+  box-shadow:0 4px 15px rgba(0,0,0,.06);
+}
+.number{
+  font-size:25px;
+  font-weight:bold;
+  margin-top:5px;
+}
+button{
+  width:100%;
+  border:0;
+  padding:15px;
+  border-radius:14px;
+  font-size:17px;
+  margin-top:12px;
+}
+.primary{background:#222;color:white}
+.secondary{background:#e9eceb;color:#222}
+.status{
+  margin-top:15px;
+  font-size:14px;
+  color:#666;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="app">
+<div class="app">
 
-    <h1>🚶 WalkEarn</h1>
-    <div class="subtitle">Walk • Track • Earn</div>
+<h1>🚶 WalkEarn</h1>
+<div class="subtitle">Walk • Track • Earn</div>
 
-    <div class="card">
-      <div class="label">Today's Steps</div>
+<div class="card">
 
-      <div class="steps" id="steps">0</div>
+<div class="label">Today's Steps</div>
 
-      <div class="label">Goal: 10,000 steps</div>
+<div class="steps" id="steps">0</div>
 
-      <div class="progress">
-        <div class="bar" id="bar"></div>
-      </div>
+<div class="label">Goal: 10,000 steps</div>
 
-      <button class="primary" onclick="addSteps()">
-        + Add Steps
-      </button>
+<div class="progress">
+<div class="bar" id="bar"></div>
+</div>
 
-      <button class="secondary" onclick="resetSteps()">
-        Reset Today
-      </button>
-    </div>
+<button class="primary" id="startBtn">
+▶ Start Walking
+</button>
 
-    <div class="stats">
+<button class="secondary" id="resetBtn">
+Reset Today
+</button>
 
-      <div class="stat">
-        <div class="label">🏆 Points</div>
-        <div class="number" id="points">0</div>
-      </div>
+<div class="status" id="status">
+Sensor not started
+</div>
 
-      <div class="stat">
-        <div class="label">🔥 Calories</div>
-        <div class="number" id="calories">0</div>
-      </div>
+</div>
 
-      <div class="stat">
-        <div class="label">📏 Distance</div>
-        <div class="number" id="distance">0 km</div>
-      </div>
+<div class="stats">
 
-      <div class="stat">
-        <div class="label">🎯 Goal</div>
-        <div class="number">10K</div>
-      </div>
+<div class="stat">
+<div class="label">🏆 Points</div>
+<div class="number" id="points">0</div>
+</div>
 
-    </div>
+<div class="stat">
+<div class="label">🔥 Calories</div>
+<div class="number" id="calories">0 kcal</div>
+</div>
 
-    <div class="card">
-      <h3>💰 Your Rewards</h3>
-      <p>Points earned: <b id="rewardPoints">0</b></p>
+<div class="stat">
+<div class="label">📏 Distance</div>
+<div class="number" id="distance">0 km</div>
+</div>
 
-      <p class="note">
-        This is the first prototype of WalkEarn.
-        Real phone step tracking and reward redemption
-        will be added in the next version.
-      </p>
-    </div>
+<div class="stat">
+<div class="label">🎯 Goal</div>
+<div class="number">10K</div>
+</div>
 
-  </div>
+</div>
 
-  <script>
+<div class="card">
+<h3>💰 Your Rewards</h3>
+<p>Points earned: <b id="rewardPoints">0</b></p>
+</div>
 
-    let steps = Number(localStorage.getItem("walkearn_steps")) || 0;
+</div>
 
-    function updateApp() {
+<script>
 
-      document.getElementById("steps").innerText =
-        steps.toLocaleString();
+let steps = Number(localStorage.getItem("walkearn_steps")) || 0;
 
-      let points = Math.floor(steps / 100);
+let running = false;
+let lastMagnitude = null;
+let lastStepTime = 0;
 
-      let calories = Math.floor(steps * 0.04);
+function updateApp(){
 
-      let distance = (steps * 0.00075).toFixed(2);
+  document.getElementById("steps").innerText =
+    steps.toLocaleString();
 
-      document.getElementById("points").innerText = points;
+  let points = Math.floor(steps / 100);
 
-      document.getElementById("rewardPoints").innerText = points;
+  let calories = Math.floor(steps * 0.04);
 
-      document.getElementById("calories").innerText =
-        calories + " kcal";
+  let distance = (steps * 0.00075).toFixed(2);
 
-      document.getElementById("distance").innerText =
-        distance + " km";
+  document.getElementById("points").innerText = points;
 
-      let progress = Math.min((steps / 10000) * 100, 100);
+  document.getElementById("rewardPoints").innerText = points;
 
-      document.getElementById("bar").style.width =
-        progress + "%";
+  document.getElementById("calories").innerText =
+    calories + " kcal";
 
-      localStorage.setItem("walkearn_steps", steps);
-    }
+  document.getElementById("distance").innerText =
+    distance + " km";
 
-    function addSteps() {
-      steps += 500;
-      updateApp();
-    }
+  let progress =
+    Math.min((steps / 10000) * 100,100);
 
-    function resetSteps() {
-      steps = 0;
-      updateApp();
-    }
+  document.getElementById("bar").style.width =
+    progress + "%";
+
+  localStorage.setItem("walkearn_steps",steps);
+}
+
+function detectStep(event){
+
+  if(!running) return;
+
+  let x = event.accelerationIncludingGravity?.x || 0;
+  let y = event.accelerationIncludingGravity?.y || 0;
+  let z = event.accelerationIncludingGravity?.z || 0;
+
+  let magnitude = Math.sqrt(
+    x*x + y*y + z*z
+  );
+
+  if(lastMagnitude === null){
+    lastMagnitude = magnitude;
+    return;
+  }
+
+  let difference =
+    Math.abs(magnitude - lastMagnitude);
+
+  let now = Date.now();
+
+  /*
+    Basic walking detection.
+    A real production pedometer needs
+    more advanced filtering/calibration.
+  */
+
+  if(difference > 1.2 &&
+     now - lastStepTime > 350){
+
+    steps++;
+
+    lastStepTime = now;
 
     updateApp();
+  }
 
-  </script>
+  lastMagnitude = magnitude;
+}
+
+async function startTracking(){
+
+  if(typeof DeviceMotionEvent === "undefined"){
+
+    document.getElementById("status").innerText =
+      "Motion sensor is not supported in this browser.";
+
+    return;
+  }
+
+  try{
+
+    if(typeof DeviceMotionEvent.requestPermission === "function"){
+
+      let permission =
+        await DeviceMotionEvent.requestPermission();
+
+      if(permission !== "granted"){
+
+        document.getElementById("status").innerText =
+          "Motion permission denied.";
+
+        return;
+      }
+    }
+
+    window.addEventListener(
+      "devicemotion",
+      detectStep
+    );
+
+    running = true;
+
+    document.getElementById("status").innerText =
+      "🟢 Step tracking is ON";
+
+    document.getElementById("startBtn").innerText =
+      "⏸ Tracking Started";
+
+  }catch(error){
+
+    document.getElementById("status").innerText =
+      "Unable to start motion sensor.";
+  }
+}
+
+function resetSteps(){
+
+  steps = 0;
+  lastMagnitude = null;
+  lastStepTime = 0;
+
+  updateApp();
+}
+
+document.getElementById("startBtn")
+.addEventListener("click",startTracking);
+
+document.getElementById("resetBtn")
+.addEventListener("click",resetSteps);
+
+updateApp();
+
+</script>
 
 </body>
 </html>
