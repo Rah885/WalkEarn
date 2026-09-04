@@ -12,7 +12,7 @@
 
     <application
         android:theme="@style/AppTheme"
-        android:label="WalkEarn"
+        android:label="WalkEarn App"
         android:allowBackup="true"
         android:supportsRtl="true">
 
@@ -21,6 +21,7 @@
             android:exported="true">
 
             <intent-filter>
+
                 <action
                     android:name="android.intent.action.MAIN" />
 
