@@ -7,20 +7,32 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:#f4f7f5;
   color:#222;
 }
+
 .app{
   max-width:480px;
   margin:auto;
   min-height:100vh;
   padding:20px;
 }
-h1{text-align:center;margin-bottom:5px}
-.subtitle{text-align:center;color:#666;margin-bottom:25px}
+
+h1{
+  text-align:center;
+  margin-bottom:5px;
+}
+
+.subtitle{
+  text-align:center;
+  color:#666;
+  margin-bottom:25px;
+}
+
 .card{
   background:#fff;
   border-radius:20px;
@@ -29,12 +41,17 @@ h1{text-align:center;margin-bottom:5px}
   box-shadow:0 5px 20px rgba(0,0,0,.08);
   text-align:center;
 }
+
 .steps{
   font-size:48px;
   font-weight:bold;
   margin:10px 0;
 }
-.label{color:#777}
+
+.label{
+  color:#777;
+}
+
 .progress{
   height:12px;
   background:#e5e5e5;
@@ -42,17 +59,20 @@ h1{text-align:center;margin-bottom:5px}
   overflow:hidden;
   margin-top:15px;
 }
+
 .bar{
   height:100%;
   width:0%;
   background:#222;
   transition:width .3s;
 }
+
 .stats{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
 }
+
 .stat{
   background:#fff;
   border-radius:16px;
@@ -60,11 +80,13 @@ h1{text-align:center;margin-bottom:5px}
   text-align:center;
   box-shadow:0 4px 15px rgba(0,0,0,.06);
 }
+
 .number{
   font-size:25px;
   font-weight:bold;
   margin-top:5px;
 }
+
 button{
   width:100%;
   border:0;
@@ -73,8 +95,17 @@ button{
   font-size:17px;
   margin-top:12px;
 }
-.primary{background:#222;color:white}
-.secondary{background:#e9eceb;color:#222}
+
+.primary{
+  background:#222;
+  color:white;
+}
+
+.secondary{
+  background:#e9eceb;
+  color:#222;
+}
+
 .status{
   margin-top:15px;
   font-size:14px;
@@ -88,15 +119,24 @@ button{
 <div class="app">
 
 <h1>🚶 WalkEarn</h1>
-<div class="subtitle">Walk • Track • Earn</div>
+
+<div class="subtitle">
+Walk • Track • Earn
+</div>
 
 <div class="card">
 
-<div class="label">Today's Steps</div>
+<div class="label">
+Today's Steps
+</div>
 
-<div class="steps" id="steps">0</div>
+<div class="steps" id="steps">
+0
+</div>
 
-<div class="label">Goal: 10,000 steps</div>
+<div class="label">
+Goal: 10,000 steps
+</div>
 
 <div class="progress">
 <div class="bar" id="bar"></div>
@@ -141,34 +181,59 @@ Sensor not started
 </div>
 
 <div class="card">
+
 <h3>💰 Your Rewards</h3>
-<p>Points earned: <b id="rewardPoints">0</b></p>
+
+<p>
+Points earned:
+<b id="rewardPoints">0</b>
+</p>
+
 </div>
 
 </div>
 
 <script>
 
-let steps = Number(localStorage.getItem("walkearn_steps")) || 0;
+let steps =
+Number(localStorage.getItem("walkearn_steps")) || 0;
 
 let running = false;
-let lastMagnitude = null;
-let lastStepTime = 0;
+
+let gravityAverage = 9.8;
+
+let lastPeakTime = 0;
+
+let lastAcceleration = 0;
+
+let stepCandidate = false;
+
+let candidateStart = 0;
+
+
+/* -------------------------
+   UPDATE SCREEN
+------------------------- */
 
 function updateApp(){
 
   document.getElementById("steps").innerText =
     steps.toLocaleString();
 
-  let points = Math.floor(steps / 100);
+  let points =
+    Math.floor(steps / 100);
 
-  let calories = Math.floor(steps * 0.04);
+  let calories =
+    Math.floor(steps * 0.04);
 
-  let distance = (steps * 0.00075).toFixed(2);
+  let distance =
+    (steps * 0.00075).toFixed(2);
 
-  document.getElementById("points").innerText = points;
+  document.getElementById("points").innerText =
+    points;
 
-  document.getElementById("rewardPoints").innerText = points;
+  document.getElementById("rewardPoints").innerText =
+    points;
 
   document.getElementById("calories").innerText =
     calories + " kcal";
@@ -182,70 +247,146 @@ function updateApp(){
   document.getElementById("bar").style.width =
     progress + "%";
 
-  localStorage.setItem("walkearn_steps",steps);
+  localStorage.setItem(
+    "walkearn_steps",
+    steps
+  );
 }
+
+
+/* -------------------------
+   STEP DETECTION
+------------------------- */
 
 function detectStep(event){
 
   if(!running) return;
 
-  let x = event.accelerationIncludingGravity?.x || 0;
-  let y = event.accelerationIncludingGravity?.y || 0;
-  let z = event.accelerationIncludingGravity?.z || 0;
+  let acc =
+    event.accelerationIncludingGravity;
 
-  let magnitude = Math.sqrt(
-    x*x + y*y + z*z
-  );
+  if(!acc) return;
 
-  if(lastMagnitude === null){
-    lastMagnitude = magnitude;
-    return;
-  }
+  let x = acc.x || 0;
+  let y = acc.y || 0;
+  let z = acc.z || 0;
 
-  let difference =
-    Math.abs(magnitude - lastMagnitude);
-
-  let now = Date.now();
+  let magnitude =
+    Math.sqrt(
+      x*x +
+      y*y +
+      z*z
+    );
 
   /*
-    Basic walking detection.
-    A real production pedometer needs
-    more advanced filtering/calibration.
+    Remove approximate gravity
+    using a slowly changing average.
   */
 
-  if(difference > 1.2 &&
-     now - lastStepTime > 350){
+  gravityAverage =
+    gravityAverage * 0.90 +
+    magnitude * 0.10;
 
-    steps++;
+  let movement =
+    Math.abs(
+      magnitude -
+      gravityAverage
+    );
 
-    lastStepTime = now;
+  let now =
+    Date.now();
 
-    updateApp();
+  /*
+    Walking usually produces
+    repeated movement pulses.
+
+    Ignore very small movements.
+  */
+
+  if(movement > 1.8){
+
+    if(!stepCandidate){
+
+      stepCandidate = true;
+
+      candidateStart = now;
+
+    }
+
+  }else{
+
+    /*
+      Movement returned to normal.
+      Confirm the candidate only if
+      enough time has passed.
+    */
+
+    if(stepCandidate){
+
+      let duration =
+        now - candidateStart;
+
+      let sinceLastStep =
+        now - lastPeakTime;
+
+      if(
+        duration >= 80 &&
+        duration <= 700 &&
+        sinceLastStep >= 400
+      ){
+
+        steps++;
+
+        lastPeakTime =
+          now;
+
+        updateApp();
+
+      }
+
+      stepCandidate = false;
+    }
   }
 
-  lastMagnitude = magnitude;
+  lastAcceleration =
+    movement;
 }
+
+
+/* -------------------------
+   START SENSOR
+------------------------- */
 
 async function startTracking(){
 
-  if(typeof DeviceMotionEvent === "undefined"){
+  if(
+    typeof DeviceMotionEvent ===
+    "undefined"
+  ){
 
-    document.getElementById("status").innerText =
-      "Motion sensor is not supported in this browser.";
+    document.getElementById("status")
+      .innerText =
+      "Motion sensor is not supported.";
 
     return;
   }
 
   try{
 
-    if(typeof DeviceMotionEvent.requestPermission === "function"){
+    if(
+      typeof DeviceMotionEvent
+        .requestPermission ===
+      "function"
+    ){
 
       let permission =
-        await DeviceMotionEvent.requestPermission();
+        await DeviceMotionEvent
+          .requestPermission();
 
       if(permission !== "granted"){
 
-        document.getElementById("status").innerText =
+        document.getElementById("status")
+          .innerText =
           "Motion permission denied.";
 
         return;
@@ -259,33 +400,59 @@ async function startTracking(){
 
     running = true;
 
-    document.getElementById("status").innerText =
+    document.getElementById("status")
+      .innerText =
       "🟢 Step tracking is ON";
 
-    document.getElementById("startBtn").innerText =
+    document.getElementById("startBtn")
+      .innerText =
       "⏸ Tracking Started";
 
   }catch(error){
 
-    document.getElementById("status").innerText =
-      "Unable to start motion sensor.";
+    document.getElementById("status")
+      .innerText =
+      "Unable to start sensor.";
   }
 }
+
+
+/* -------------------------
+   RESET
+------------------------- */
 
 function resetSteps(){
 
   steps = 0;
-  lastMagnitude = null;
-  lastStepTime = 0;
+
+  lastPeakTime = 0;
+
+  stepCandidate = false;
 
   updateApp();
 }
 
+
+/* -------------------------
+   BUTTONS
+------------------------- */
+
 document.getElementById("startBtn")
-.addEventListener("click",startTracking);
+  .addEventListener(
+    "click",
+    startTracking
+  );
 
 document.getElementById("resetBtn")
-.addEventListener("click",resetSteps);
+  .addEventListener(
+    "click",
+    resetSteps
+  );
+
+
+/* -------------------------
+   INITIALIZE
+------------------------- */
 
 updateApp();
 
